@@ -1,0 +1,13 @@
+g++ test.cpp -lboost_system -lboost_thread -lpthread
+
+0000 + 0000 + screenX(1 octet) + screenY(1 octet) : Connected
+1111 + 1111                                       : Disconnected
+0001 + 0001 + PosX(1 octet) + PosY(1 octet)       : Player position
+0010
+0011
+0100
+0101
+0111
+1000
+1001
+1011

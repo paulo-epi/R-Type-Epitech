@@ -1,0 +1,12 @@
+[requires]
+sfml/2.5.1
+boost/1.70.0
+
+[options]
+sfml:graphics=True
+sfml:window=True
+sfml:audio=True
+sfml:network=True
+
+[generators]
+cmake

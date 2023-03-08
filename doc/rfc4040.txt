@@ -1,0 +1,439 @@
+RFC 4040                                                        P. Petit
+                                                                 Epitech
+                                                       19 September 2022
+
+
+
+                    Binary Protocol Specification
+                    -----------------------------
+Status of this Memo
+
+   This memo describes client requirements for real-time communication
+   services.  This memo provides information for the Internet community,
+   and requests discussion and suggestions for improvements.  It does
+   not specify any standard.  Distribution of this memo is unlimited.
+
+Abstract
+
+   This document describes the binary protocol used by the Epitech
+   Real-Time Communication Services.  This protocol is used to send
+   messages between the client and the server.
+
+   This document is a work in progress.
+
+Copyright Notice
+
+   Copyright (c) 2022 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+   This document may contain material from IETF Documents or IETF
+   Contributions published or made publicly available before November
+   10, 2008.  The person(s) controlling the copyright in some of this
+   material may not have granted the IETF Trust the right to allow
+   modifications of such material outside the IETF Standards Process.
+   Without obtaining an adequate license from the person(s) controlling
+   the copyright in such materials, this document may not be modified
+   outside the IETF Standards Process, and derivative works of it may
+   not be created outside the IETF Standards Process, except to format
+   it for publication as an RFC or to translate it into languages other
+   than English.
+
+
+
+
+
+Epitech                                                         [Page 1]
+RFC 4040          R-TYPE Request for Comments          19 September 2022
+
+Table of Contents
+------------
+
+   1. Introduction .................................................. 2
+   2. Protocol ...................................................... 2
+      2.1. Packet Format ............................................ 2
+      2.2. Server connection ........................................ 3
+      2.3. Lobby connection ......................................... 3
+      2.4. Game start ............................................... 5
+      2.5. Player input ............................................. 5
+   3. Security Considerations ....................................... 6
+   4. IANA Considerations ........................................... 7
+   5. References .................................................... 7
+   6. Acknowledgements .............................................. 7
+   7. Authors' Addresses ............................................ 8
+
+1. Introduction
+
+   Every package will be documented below, classified by its network
+   protocol it MUST be sent with: UDP (described in RFC 0768 [RFC0768]).
+   or TCP (described in RFC 0793 [RFC0793]).
+
+2. Protocol
+
+   The protocol is based on a packet format.  Every packet MUST be
+   encoded in binary format.  The packet format is described below.
+   The protocol is designed to be as simple as possible, and to be as a
+   lightweight as possible. The protocol is designed to be used with
+   UDP, but can be used with TCP as well. The protocol is designed to
+   be used with the R-TYPE game, but can be used with any other game as
+   well.
+
+2.1. Packet Format
+
+   Every packet MUST be encoded in binary format.  The packet format
+   is described below.
+
+   The packet format is as follows:
+
+   +---------------+---------------+---------------+---------------+
+   |  Packet Type  | Packet Length |  Packet Data  |  Packet Data  |
+   |               |               |               |               |
+   +---------------+---------------+---------------+---------------+
+   |  1 byte       |  1 byte       |0 to 255 bytes |0 to 255 bytes |
+   +---------------+---------------+---------------+---------------+
+
+   The packet type is a 1 byte unsigned integer.  The packet length
+   is a 1 byte unsigned integer. The packet data is a variable length
+   string.
+   The packet data length is defined by the packet length field.
+   The packet length field MUST be set to the length of the packet
+   data field.
+   The packet data field MUST be encoded in binary format. The packet
+   data format is described below.
+
+
+
+
+
+Epitech                                                         [Page 2]
+RFC 4040          R-TYPE Request for Comments          19 September 2022
+
+2.2. Server connection
+
+   The server connection is used to connect to the server.  The server
+   connection is used to send the client's informations to the server.
+
+   To connect to the server, the client MUST send to the server a the
+   following informations:
+
+      - The Username. (chosen by the client's user)
+      - The ip of the server.
+      - The port of the server.
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      Connected to server.
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations.
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      Invalid Arguments.
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations about the failure.
+
+
+2.3. Lobby connection
+
+   Once connected to the server, the client can connect to a lobby.
+   The client can (as described in details below) create a new lobby,
+   list the existing lobbies or join an already created lobby.
+
+   To connect to the lobby, the client MUST send to the lobby a the
+   following informations:
+
+      - ACTION_NAME = HOST
+      - LOBBY_NAME (name of the client + "'s party")
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      LOBBY-CREATED
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations.
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      Cannot create lobby.
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations about the failure.
+
+
+
+
+
+Epitech                                                         [Page 3]
+RFC 4040          R-TYPE Request for Comments          19 September 2022
+
+   To list existing game lobbies, the client MUST send to the server a
+   payload containing:
+
+      - ACTION_NAME = JOIN
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      - GET-LOBBIES-LIST
+
+   Where GET-LOBBIES-LIST is a list of GET-LOBBY_INFOS separated by a ','
+   character.
+   GET-LOBBY_INFOs is the name of the lobby and its current number of players
+   separated by a '|' character.
+
+      Example:
+
+         /--------------------------------------\
+         |    lobby name    | Number of players |
+         |------------------|-------------------|
+         |   jean's party   |        3/4        |
+         |   lobby's party  |        1/4        |
+         |   momo's party   |        4/4        |
+         \--------------------------------------/
+
+      GET-LOBBIES-LIST = "jean's party|3,lobby's party|1,momo's party|4"
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      NO INSTANCE
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations about the failure.
+
+   To join an existing game lobby, the client MUST send to the server a
+   payload containing:
+
+      - ACTION_NAME = JOIN
+      - LOBBY_NAME (name of the client + "'s party")
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      LOBBY-JOINED
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations.
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      INSTANCE FULL
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations about the failure.
+
+
+
+
+
+Epitech                                                         [Page 4]
+RFC 4040          R-TYPE Request for Comments          19 September 2022
+
+2.4. Game start
+
+   Once connected to the lobby, the client can start the game.The client
+   can (as described in details below) start the game.
+
+   To start the game, the client MUST send to the server a payload
+   containing:
+
+      - ACTION_NAME = READY
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      STATE-CHANGED
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations.
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      Cannot start game.
+
+   The server MAY add a BODY data to the response payload, containing
+   additionnal informations about the failure.
+
+2.5. Player input
+
+   Once connected to the game, the client can start play the game.
+
+   The player can move in the game, the client MUST send to the server a
+   request containing:
+
+      Pressed the ARROWS button of the keyboard.
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      The new coordinates of the player.
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      The same coordinates of the player before the request.
+
+
+
+
+   Epitech                                                         [Page 5]
+   RFC 4040          R-TYPE Request for Comments          19 September 2022
+
+   The player can shoot in the game, the client MUST send to the server a
+   request containing:
+
+      Pressed the SPACE button of the keyboard.
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      The new coordinates of the SHOT.
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      The server doesn't send coordinates of a SHOT.
+
+   The player can paused the game, the client MUST send to the server a
+   request containing:
+
+      Pressed the ESCAPE button of the keyboard.
+
+   On success, the server MUST send to the client a response payload
+   containing:
+
+      - END
+
+   On failure, the server MUST send to the client a response payload
+   containing:
+
+      - NO-END
+
+3. Security Considerations
+
+   The IANA guidelines described in this document do not change the
+   security properties of UDP, TCP, SCTP, or DCCP.
+
+   Assignment of a service name or port number does not in any way imply
+   an endorsement of an application or product, and the fact that
+   network traffic is flowing to or from an assigned port number does
+   not mean that it is "good" traffic, or even that it is used by the
+   assigned service.  Firewall and system administrators should choose
+   how to configure their systems based on their knowledge of the
+   traffic in question, not based on whether or not there is an assigned
+   service name or port number.
+
+   Services are expected to include support for security, either as
+   default or dynamically negotiated in-band.  The use of separate
+   service name or port number assignments for secure and insecure
+   variants of the same service is to be avoided in order to discourage
+   the deployment of insecure services.
+
+
+
+
+
+Epitech                                                         [Page 6]
+RFC 4040          R-TYPE Request for Comments          19 September 2022
+
+4. IANA Considerations
+
+   This document obsoletes Sections 8 and 9.1 of the March 2000 IANA
+   Allocation Guidelines [RFC2780].
+
+   Upon approval of this document for publication as an RFC, IANA worked
+   with Stuart Cheshire, maintainer of the independent service name
+   registry [SRVREG], to merge the contents of that private registry
+   into the official IANA registry.  The independent registry web page
+   has been updated with pointers to the IANA registry and to this RFC.
+
+   IANA created a new service name entry in the service name and port
+   number registry [PORTREG] for all entries in the Protocol and Service
+   Names registry [PROTSERVREG] that did not already have one assigned.
+
+   IANA also indicates in the Assignment Notes for "www" and "www-http"
+   that they are duplicate terms that refer to the "http" service, and
+   should not be used for discovery purposes.  For this conceptual
+   service (human-readable web pages served over HTTP), the correct
+   service name to use for service discovery purposes is "http" (see
+   Section 5).
+
+5. References
+
+   [RFC0768]  Postel, J., "User Datagram Protocol", STD 7, RFC 0768,
+              September 1980.
+
+   [RFC0793]  Postel, J., "Transmission Control Protocol", STD 7, RFC
+              0793, September 1980.
+
+6. Acknowledgements
+
+   The authors would like to thank the following people for their
+   contributions to this document and this project : The R-TYPE team.
+
+
+
+
+
+Epitech                                                         [Page 7]
+RFC 4040          R-TYPE Request for Comments          19 September 2022
+
+7. Authors' Addresses
+
+   The authors can be reached at the following addresses:
+
+   Paul Petit
+   Epitech
+   80 Rue Saint-Georges
+   54000 Nancy
+   France
+
+   Phone: +33 4 72 18 18 10
+   EMail: paul.petit@epitech.eu
+
+
+   Kelian This
+   Epitech
+   80 Rue Saint-Georges
+   54000 Nancy
+   France
+
+   Phone: +33 4 72 18 18 11
+   EMail: kelian.this@epitech.eu
+
+
+   Tiago Martins-Sousa
+   Epitech
+   80 Rue Saint-Georges
+   54000 Nancy
+   France
+
+   Phone: +33 4 72 18 18 12
+   EMail: thiago.martins-sousa@epitech.eu
+
+
+   Maxime Eleonore
+   Epitech
+   5-9 Rue du Palais Rihour
+   59000 Lille
+   France
+
+   Phone: +33 4 72 18 18 13
+   EMail: maxime.eleonore@epitech.eu
